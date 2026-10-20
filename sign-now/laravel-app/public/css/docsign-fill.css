@@ -1,0 +1,197 @@
+/* DocSign fill / finalize / signing / builder additions.
+   Loaded after docsign.css. Field coordinates live in "base" px and each page's
+   .field-layer is scaled with transform; --ds-k (= pageScale / renderScale) is
+   exposed on the layer so touch targets can be kept at a fixed on-screen size. */
+
+/* ---------- Page layout helpers ---------- */
+.ds-page-fill {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    background: var(--ds-bg);
+}
+.ds-page-fill--builder { height: 100%; overflow: hidden; }
+.ds-page-fill > #pdfStack { min-width: 0; }
+
+/* Builder properties form: flex layout lives in a class so .hidden can win */
+.ds-props-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.ds-props-form.hidden { display: none; }
+
+/* ---------- Field layer ---------- */
+.field-layer { z-index: 1; }
+
+/* ---------- Visible keyboard focus ---------- */
+.df-sign-wrap:focus-visible,
+.df-fill-input:focus-visible,
+.df-admin-field [role="button"]:focus-visible,
+.df-sign-tools button:focus-visible,
+.ds-zoom button:focus-visible,
+.ds-signbar button:focus-visible {
+    outline: 2px solid var(--ds-accent, #2563eb);
+    outline-offset: 2px;
+}
+.df-sign-wrap:focus-visible { box-shadow: 0 0 0 4px rgba(37, 99, 235, .25); }
+
+/* "Next field" flash */
+@keyframes df-next-flash {
+    0%   { box-shadow: 0 0 0 0 rgba(37, 99, 235, .55); }
+    70%  { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+.df-next-flash { animation: df-next-flash .7s ease-out 2; border-radius: 4px; }
+
+/* ---------- Zoom control ---------- */
+.ds-zoom {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius-sm, 6px);
+    background: #fff;
+    padding: 2px;
+}
+.ds-zoom__fit {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ds-text);
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.ds-zoom__fit:hover { background: #f1f5f9; }
+.ds-zoom .ds-iconbtn { width: 28px; height: 28px; }
+
+/* ---------- Finalize: add-field bar, placement hint, side panel ---------- */
+.ds-addbar { display: flex; flex-wrap: wrap; gap: 6px; }
+.ds-addbar .ds-btn { padding: 4px 10px; font-size: 12px; }
+
+.ds-placement-hint {
+    display: none;                    /* JS toggles display:flex */
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 6px 16px;
+    font-size: 13px;
+    background: #eef2ff;
+    color: #3730a3;
+    border-top: 1px solid #c7d2fe;
+}
+
+.ds-finalize { flex-direction: row; }
+.ds-finalize > #pdfStack { flex: 1 1 0; }
+
+.ds-fpanel {
+    flex: none;
+    width: 320px;
+    background: #fafbfd;
+    border-left: 1px solid var(--ds-border);
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    align-self: stretch;
+    max-height: 100%;
+}
+.ds-fpanel__empty {
+    padding: 32px 20px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--ds-muted);
+}
+.ds-fpanel__editor { flex-direction: column; }
+.ds-fpanel__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--ds-border);
+}
+.ds-fpanel__type {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--ds-muted);
+}
+.ds-fpanel__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ds-text);
+    overflow-wrap: anywhere;
+}
+.ds-fpanel__body { padding: 16px; }
+
+/* ---------- Signing: sticky bottom bar (phones) ---------- */
+.ds-signbar { display: none; }
+
+@media (max-width: 639px) {
+    .ds-signing-desktop { display: none !important; }
+    .ds-signing-stack { padding-bottom: 96px; }
+    .ds-signbar {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+        background: rgba(255, 255, 255, .96);
+        backdrop-filter: saturate(140%) blur(8px);
+        border-top: 1px solid var(--ds-border);
+        box-shadow: 0 -4px 16px rgba(15, 23, 42, .08);
+    }
+    .ds-signbar__progress { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .ds-signbar__text { font-size: 12px; color: var(--ds-muted); white-space: nowrap; }
+    .ds-signbar .ds-btn { padding: 10px 12px; min-height: 44px; font-size: 13px; white-space: nowrap; }
+    .ds-status-card { padding: 28px 18px !important; }
+
+    /* Finalize panel becomes a bottom sheet */
+    .ds-finalize { flex-direction: column; }
+    .ds-fpanel {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        top: auto;
+        width: auto;
+        max-height: 60vh;
+        z-index: 55;
+        border-left: none;
+        border-top: 1px solid var(--ds-border);
+        border-radius: 14px 14px 0 0;
+        box-shadow: 0 -8px 30px rgba(15, 23, 42, .18);
+        transform: translateY(100%);
+        transition: transform .2s ease;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .ds-fpanel.ds-fpanel--open { transform: translateY(0); }
+    .ds-fpanel__empty { display: none; }
+    .ds-addbar { width: 100%; }
+}
+
+/* ---------- Touch: comfortable drag / resize handles (>= 24px on screen) ---------- */
+@media (pointer: coarse) {
+    .df-drag-handle {
+        display: flex !important;
+        height: calc(24px / var(--ds-k, 1)) !important;
+    }
+    .df-drag-handle span { font-size: calc(11px / var(--ds-k, 1)) !important; }
+    .df-resize-handle {
+        width: calc(24px / var(--ds-k, 1)) !important;
+        height: calc(24px / var(--ds-k, 1)) !important;
+    }
+    .df-admin-del {
+        width: calc(22px / var(--ds-k, 1)) !important;
+        height: calc(22px / var(--ds-k, 1)) !important;
+        font-size: calc(16px / var(--ds-k, 1)) !important;
+    }
+    .df-sign-tools button { min-height: 24px; }
+}
