@@ -39,6 +39,7 @@ cat > /var/www/html/.env << 'ENVEOF'
 APP_NAME=SignNow
 APP_ENV=local
 APP_KEY=
+# dev only
 APP_DEBUG=true
 APP_URL=http://localhost:8027
 

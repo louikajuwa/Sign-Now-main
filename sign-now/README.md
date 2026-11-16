@@ -48,7 +48,7 @@ All services share the `signnow` bridge network.
 
 ## Environment
 
-The Laravel app is pre-configured in `laravel-app/.env` (valid `APP_KEY`, Docker service hostnames — `DB_HOST=mysql`, `REDIS_HOST=redis`, `MAIL_HOST=mailhog`). Copy `laravel-app/.env.example` if you need a fresh one, then run `php artisan key:generate`.
+Copy `.env.example` to `.env` and `laravel-app/.env.example` to `laravel-app/.env` (Docker service hostnames: `DB_HOST=mysql`, `REDIS_HOST=redis`, `MAIL_HOST=mailhog`), then run `php artisan key:generate` inside the `app` container.
 
 Compose reads the following from a root `.env` (defaults applied if unset), used by the `mysql` and `phpmyadmin` services:
 
@@ -107,3 +107,14 @@ docker compose ps                        # all 8 containers Up; mysql + redis he
 ```
 
 Outgoing email is captured by MailHog at **http://localhost:8227**.
+
+Seed optional demo data (dev only): `docker compose exec app php artisan db:seed --class=DemoDocumentSeeder`
+
+## Troubleshooting
+
+- **Port already in use:** change the left-hand port in `docker-compose.yml` (e.g. `"9027:80"`).
+- **HTTP 500:** `docker compose exec app php artisan optimize:clear` then `php artisan key:generate`; check `storage/logs/laravel.log`.
+- **Containers exit on start / storage not writable:** `docker compose exec app chmod -R 775 storage bootstrap/cache`.
+- **MySQL connection errors on first boot:** MySQL needs 10-20 seconds to initialise; wait and retry.
+- **WebSocket not connecting on dashboard:** check `docker compose ps`, `docker compose logs -f node`, and `docker compose exec redis redis-cli ping` (expect `PONG`).
+

@@ -4,10 +4,7 @@ Document e-signing platform: upload a PDF, place signature and form fields, invi
 
 ## Repository layout
 
-| Folder | What it is |
-|--------|------------|
-| [`sign-now/`](sign-now/) | Main app — Laravel (PHP 8.3) + MySQL + Redis, with a Node.js Socket.IO server for real-time updates. Fully Dockerized. |
-| [`Sign-Now-main/docsign/`](Sign-Now-main/docsign/) | DocSign module for a PHP/Phalcon host app — controllers, models, views and SQL migrations ([setup notes](Sign-Now-main/docsign/SETUP.md)). |
+Everything lives in [`sign-now/`](sign-now/) — a Laravel (PHP 8.3) + MySQL + Redis app with a Node.js Socket.IO server for real-time updates. Fully Dockerized.
 
 ## Quick start
 
@@ -28,3 +25,7 @@ Open http://localhost:8027. Full instructions, services and ports are in [`sign-
 cd sign-now
 docker compose exec app php artisan test
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
